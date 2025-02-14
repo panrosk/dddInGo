@@ -1,20 +1,18 @@
 package vo
 
-import (
-	"coworking/internal/app/domain/errors"
-)
+import "coworking/internal/app/domain/domain_errors"
 
 type HotdeskNumber struct {
 	value int
 }
 
 func NewHotdeskNumber(value int) (HotdeskNumber, error) {
-	if value <= 0 {
-		return HotdeskNumber{}, errors.ErrInvalidHotDeskNumber
+	if value < 1 {
+		return HotdeskNumber{}, domain_errors.ErrInvalidHotDeskNumber
 	}
 	return HotdeskNumber{value: value}, nil
 }
 
-func (hn HotdeskNumber) Value() int {
-	return hn.value
+func (h HotdeskNumber) Value() int {
+	return h.value
 }

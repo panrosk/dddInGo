@@ -1,8 +1,8 @@
-package hotdesk
+package commands
 
 import (
+	"coworking/internal/app/domain/domain_errors"
 	"coworking/internal/app/domain/entities"
-	"coworking/internal/app/usecases"
 	"coworking/internal/ports"
 )
 
@@ -19,12 +19,18 @@ func NewRegisterHotdeskUsecase(storage ports.RepositoryHotdeskPort) *RegisterHot
 }
 
 func (u *RegisterHotdeskUsecase) Execute(params RegisterHotdeskParams) (*entities.Hotdesk, error) {
-	hotdesk, err := entities.NewHotdesk(params.number)
+	hotdesk, err := entities.NewHotdesk(params.Number)
 	if err != nil {
 		return nil, err
 	}
 
-	err = u.storage.SaveHotdesk(hotdesk)
+	currentHotdesk, err := u.storage.FindById(&hotdesk.Number)
+
+	if currentHotdesk != nil {
+		return nil, domain_errors.ErrHotDeskAlreadyExists
+	}
+
+	err = u.storage.Save(hotdesk)
 
 	if err != nil {
 		return nil, err
@@ -32,5 +38,3 @@ func (u *RegisterHotdeskUsecase) Execute(params RegisterHotdeskParams) (*entitie
 
 	return hotdesk, nil
 }
-
-var _ usecases.Command[RegisterHotdeskParams, *entities.Hotdesk] = (*RegisterHotdeskUsecase)(nil)

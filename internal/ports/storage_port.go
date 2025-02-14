@@ -1,9 +1,12 @@
 package ports
 
-import "coworking/internal/app/domain/entities"
+import (
+	"coworking/internal/app/domain/entities"
+	"coworking/internal/app/domain/vo"
+)
 
 type RepositoryHotdeskPort interface {
-	SaveHotdesk(hotdesk *entities.Hotdesk) error
-	FindByIdHotdesk(hotdeskNumber int) (entities.Hotdesk, error)
-	FindAllHotdesk() ([]*entities.Hotdesk, error)
+	Save(hotdesk *entities.Hotdesk) error
+	FindById(number *vo.HotdeskNumber) (*entities.Hotdesk, error)
+	FindAll() ([]*entities.Hotdesk, error)
 }

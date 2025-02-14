@@ -1,9 +1,17 @@
 package http
 
-import "github.com/gofiber/fiber/v2"
+import (
+	"coworking/internal/adapters/http/handlers"
+	"coworking/internal/adapters/storage"
+	"coworking/internal/app/usecases"
+	"coworking/internal/app/usecases/commands"
+)
 
 func (s *Server) RegisterRoutes() {
-	s.Get("/", func(c *fiber.Ctx) error {
-		return c.SendString("Hello, World!")
-	})
+	repo := storage.NewHotDeskRepository()
+	registerCommand := commands.NewRegisterHotdeskUsecase(repo)
+	usecases_commands := usecases.HotdeskUsecases{RegisterHotdesk: registerCommand}
+	hotdeskHandler := handlers.NewHotdeskHandler(&usecases_commands)
+	hotdeskHandler.RegisterRoutes(s.App)
+
 }

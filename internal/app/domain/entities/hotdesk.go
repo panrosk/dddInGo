@@ -1,7 +1,6 @@
 package entities
 
 import (
-	"coworking/internal/app/domain/errors"
 	"coworking/internal/app/domain/vo"
 	"time"
 
@@ -18,23 +17,34 @@ const (
 
 type Hotdesk struct {
 	id        uuid.UUID
-	number    vo.HotdeskNumber
+	Number    vo.HotdeskNumber
 	status    HotdeskStatus
-	createdAt string
-	updatedAt string
+	createdAt time.Time
+	updatedAt time.Time
 }
 
 func NewHotdesk(number int) (*Hotdesk, error) {
 	hotdeskNumber, err := vo.NewHotdeskNumber(number)
-	if err == nil {
-		return nil, errors.ErrInvalidHotDeskNumber
+
+	if err != nil {
+		return nil, err
 	}
 
 	return &Hotdesk{
 		id:        uuid.New(),
-		number:    hotdeskNumber,
+		Number:    hotdeskNumber,
 		status:    Available,
-		createdAt: time.Now().String(),
-		updatedAt: time.Now().String(),
+		createdAt: time.Now(),
+		updatedAt: time.Now(),
 	}, nil
+}
+
+func (h *Hotdesk) GetHotdesk() map[string]interface{} {
+	return map[string]interface{}{
+		"id":         h.id.String(),
+		"number":     h.Number.Value(),
+		"status":     string(h.status),
+		"created_at": h.createdAt.Format(time.RFC3339),
+		"updated_at": h.updatedAt.Format(time.RFC3339),
+	}
 }
