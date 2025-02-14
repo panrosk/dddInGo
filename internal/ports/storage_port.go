@@ -1,12 +1,8 @@
 package ports
 
-import (
-	"coworking/internal/app/domain/entities"
-	"coworking/internal/app/domain/vo"
-)
-
-type RepositoryHotdeskPort interface {
-	Save(hotdesk *entities.Hotdesk) error
-	FindById(number *vo.HotdeskNumber) (*entities.Hotdesk, error)
-	FindAll() ([]*entities.Hotdesk, error)
+type RepositoryPort[T any] interface {
+	Save(entity T) error
+	FindById(id any) (T, error)
+	FindAll() ([]T, error)
+	FindByFilter(filter func(T) bool) ([]T, error)
 }

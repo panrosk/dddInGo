@@ -6,8 +6,10 @@ import (
 )
 
 var HTTPErrorMapping = map[error]int{
-	domain_errors.ErrInvalidHotDeskNumber: fiber.StatusBadRequest, // 400
-	domain_errors.ErrHotDeskAlreadyExists: fiber.StatusConflict,   // 409
+	domain_errors.ErrInvalidHotDeskNumber:       fiber.StatusBadRequest, // 400
+	domain_errors.ErrHotDeskAlreadyExists:       fiber.StatusConflict,   // 409
+	domain_errors.ErrInvalidMeetingRoomCapacity: fiber.StatusBadRequest, // 400
+	domain_errors.ErrMeetingRoomAlreadyExists:   fiber.StatusConflict,   // 409
 }
 
 func MapDomainErrorToHTTPStatus(err error) int {

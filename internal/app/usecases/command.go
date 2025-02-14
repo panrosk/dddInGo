@@ -9,3 +9,7 @@ type Command[T any, R any] interface {
 type HotdeskUsecases struct {
 	RegisterHotdesk *commands.RegisterHotdeskUsecase
 }
+
+type MeetingRoomUsecases struct {
+	RegisterMeetingRoom *commands.RegisterMeetingRoomUsecase
+}

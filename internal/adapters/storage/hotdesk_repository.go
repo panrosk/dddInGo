@@ -4,6 +4,7 @@ import (
 	"coworking/internal/app/domain/entities"
 	"coworking/internal/app/domain/vo"
 	"coworking/internal/ports"
+	"errors"
 )
 
 type HotDeskRepository struct {
@@ -39,7 +40,11 @@ func filter(hotdesks []*entities.Hotdesk, predicate func(*entities.Hotdesk) bool
 	return result
 }
 
-func (r *HotDeskRepository) FindById(number *vo.HotdeskNumber) (*entities.Hotdesk, error) {
+func (r *HotDeskRepository) FindById(id any) (*entities.Hotdesk, error) {
+	number, ok := id.(*vo.HotdeskNumber)
+	if !ok {
+		return nil, errors.New("invalid ID type")
+	}
 	if number == nil {
 		return nil, nil
 	}
@@ -52,4 +57,11 @@ func (r *HotDeskRepository) FindById(number *vo.HotdeskNumber) (*entities.Hotdes
 	return nil, nil
 }
 
-var _ ports.RepositoryHotdeskPort = (*HotDeskRepository)(nil)
+func (r *HotDeskRepository) FindByFilter(filterFunc func(*entities.Hotdesk) bool) ([]*entities.Hotdesk, error) {
+	if filterFunc == nil {
+		return nil, errors.New("filter function cannot be nil")
+	}
+	return filter(r.hotdesk, filterFunc), nil
+}
+
+var _ ports.RepositoryPort[*entities.Hotdesk] = (*HotDeskRepository)(nil)

@@ -6,6 +6,7 @@ import (
 	"coworking/internal/app/usecases"
 	"coworking/internal/app/usecases/commands"
 	"coworking/internal/ports"
+
 	"github.com/gofiber/fiber/v2"
 )
 
@@ -26,18 +27,12 @@ func (h *HotdeskHandler) RegisterEntity(c *fiber.Ctx) error {
 	var req models.HotdeskDTO
 
 	if err := c.BodyParser(&req); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error":   err.Error(),
-			"message": "Invalid request body",
-		})
+		return formatErrorResponse(c, fiber.StatusBadRequest, "Invalid request body", err.Error())
 	}
 
 	validationErrors := req.Validate()
 	if len(validationErrors) > 0 {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error":   "Validation failed",
-			"details": validationErrors,
-		})
+		return formatErrorResponse(c, fiber.StatusBadRequest, "Validation failed", validationErrors)
 	}
 
 	params := commands.RegisterHotdeskParams{
@@ -45,19 +40,14 @@ func (h *HotdeskHandler) RegisterEntity(c *fiber.Ctx) error {
 	}
 
 	hotdesk, err := h.commands.RegisterHotdesk.Execute(params)
-
 	if err != nil {
 		statusCode := http_errors.MapDomainErrorToHTTPStatus(err)
-		return c.Status(statusCode).JSON(fiber.Map{
-			"error":   err.Error(),
-			"message": "Failed to register commands",
-		})
+		return formatErrorResponse(c, statusCode, "Failed to register hotdesk", err.Error())
 	}
 
-	return c.Status(200).JSON(fiber.Map{
-		"hotdesk": hotdesk.GetHotdesk(),
-		"message": "Hotdesk registered successfully",
-	})
+	return formatSuccessResponse(c, fiber.StatusOK, "Hotdesk registered successfully", hotdesk.GetHotdesk())
 }
+
+var _ ports.HttpPort = (*HotdeskHandler)(nil)
 
 var _ ports.HttpPort = (*HotdeskHandler)(nil)

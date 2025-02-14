@@ -2,9 +2,8 @@ package entities
 
 import (
 	"coworking/internal/app/domain/vo"
-	"time"
-
 	"github.com/google/uuid"
+	"time"
 )
 
 type HotdeskStatus string

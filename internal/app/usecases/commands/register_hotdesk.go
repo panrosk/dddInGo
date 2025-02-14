@@ -11,10 +11,10 @@ type RegisterHotdeskParams struct {
 }
 
 type RegisterHotdeskUsecase struct {
-	storage ports.RepositoryHotdeskPort
+	storage ports.RepositoryPort[*entities.Hotdesk]
 }
 
-func NewRegisterHotdeskUsecase(storage ports.RepositoryHotdeskPort) *RegisterHotdeskUsecase {
+func NewRegisterHotdeskUsecase(storage ports.RepositoryPort[*entities.Hotdesk]) *RegisterHotdeskUsecase {
 	return &RegisterHotdeskUsecase{storage: storage}
 }
 
@@ -24,14 +24,19 @@ func (u *RegisterHotdeskUsecase) Execute(params RegisterHotdeskParams) (*entitie
 		return nil, err
 	}
 
-	currentHotdesk, err := u.storage.FindById(&hotdesk.Number)
+	existingHotdesks, err := u.storage.FindByFilter(func(hd *entities.Hotdesk) bool {
+		return hd.Number.Value() == params.Number
+	})
 
-	if currentHotdesk != nil {
+	if err != nil {
+		return nil, err
+	}
+
+	if len(existingHotdesks) > 0 {
 		return nil, domain_errors.ErrHotDeskAlreadyExists
 	}
 
 	err = u.storage.Save(hotdesk)
-
 	if err != nil {
 		return nil, err
 	}

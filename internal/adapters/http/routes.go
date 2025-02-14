@@ -8,10 +8,17 @@ import (
 )
 
 func (s *Server) RegisterRoutes() {
-	repo := storage.NewHotDeskRepository()
-	registerCommand := commands.NewRegisterHotdeskUsecase(repo)
-	usecases_commands := usecases.HotdeskUsecases{RegisterHotdesk: registerCommand}
-	hotdeskHandler := handlers.NewHotdeskHandler(&usecases_commands)
+	// Hotdesk setup
+	hotdeskRepo := storage.NewHotDeskRepository()
+	hotdeskRegisterCommand := commands.NewRegisterHotdeskUsecase(hotdeskRepo)
+	hotdeskUsecases := usecases.HotdeskUsecases{RegisterHotdesk: hotdeskRegisterCommand}
+	hotdeskHandler := handlers.NewHotdeskHandler(&hotdeskUsecases)
 	hotdeskHandler.RegisterRoutes(s.App)
 
+	// Meeting Room setup
+	meetingRoomRepo := storage.NewMeetingRoomRepository()
+	meetingRoomRegisterCommand := commands.NewRegisterMeetingRoomUsecase(meetingRoomRepo)
+	meetingRoomUsecases := usecases.MeetingRoomUsecases{RegisterMeetingRoom: meetingRoomRegisterCommand}
+	meetingRoomHandler := handlers.NewMeetingRoomHandler(&meetingRoomUsecases)
+	meetingRoomHandler.RegisterRoutes(s.App)
 }
