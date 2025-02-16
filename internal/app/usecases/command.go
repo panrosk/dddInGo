@@ -13,3 +13,7 @@ type HotdeskUsecases struct {
 type MeetingRoomUsecases struct {
 	RegisterMeetingRoom *commands.RegisterMeetingRoomUsecase
 }
+
+type OfficeUsecases struct {
+	RegisterOffice *commands.RegisterOfficeUsecase
+}

@@ -6,25 +6,21 @@ import (
 	"time"
 )
 
-type HotdeskStatus string
-
-const (
-	Available        HotdeskStatus = "available"
-	Occupied         HotdeskStatus = "occupied"
-	UnderMaintenance HotdeskStatus = "under_maintenance"
-)
-
 type Hotdesk struct {
 	id        uuid.UUID
 	Number    vo.HotdeskNumber
-	status    HotdeskStatus
+	status    vo.Status
 	createdAt time.Time
 	updatedAt time.Time
 }
 
 func NewHotdesk(number int) (*Hotdesk, error) {
 	hotdeskNumber, err := vo.NewHotdeskNumber(number)
+	if err != nil {
+		return nil, err
+	}
 
+	status, err := vo.NetStatus("Available")
 	if err != nil {
 		return nil, err
 	}
@@ -32,7 +28,7 @@ func NewHotdesk(number int) (*Hotdesk, error) {
 	return &Hotdesk{
 		id:        uuid.New(),
 		Number:    hotdeskNumber,
-		status:    Available,
+		status:    status,
 		createdAt: time.Now(),
 		updatedAt: time.Now(),
 	}, nil

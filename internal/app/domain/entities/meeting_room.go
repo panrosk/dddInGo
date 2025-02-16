@@ -7,13 +7,11 @@ import (
 	"github.com/google/uuid"
 )
 
-type MeetingRoomStatus string
-
 type MeetingRoom struct {
 	id        uuid.UUID
 	name      vo.MeetingRoomName
 	capacity  vo.MeetingRoomCapacity
-	status    MeetingRoomStatus
+	status    vo.Status
 	createdAt time.Time
 	updatedAt time.Time
 }
@@ -29,11 +27,16 @@ func NewMeetingRoom(name string, capacity int) (*MeetingRoom, error) {
 		return nil, err
 	}
 
+	status, err := vo.NetStatus("Available")
+	if err != nil {
+		return nil, err
+	}
+
 	return &MeetingRoom{
 		id:        uuid.New(),
 		name:      meetingRoomName,
 		capacity:  meetingRoomCapacity,
-		status:    MeetingRoomStatus(Available),
+		status:    status,
 		createdAt: time.Now(),
 		updatedAt: time.Now(),
 	}, nil
