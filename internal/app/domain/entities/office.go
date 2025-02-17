@@ -11,7 +11,7 @@ type OfficeStatus string
 type Office struct {
 	id          uuid.UUID
 	number      vo.OfficeNumber
-	status      OfficeStatus
+	status      vo.Status
 	leasePeriod vo.OfficeLeasePeriod
 	createdAt   time.Time
 	updatedAt   time.Time
@@ -29,7 +29,7 @@ func NewOffice(number int, leasePeriod int, status string) (*Office, error) {
 	}
 
 	if status == "" {
-		status = "active"
+		status = "Active"
 	}
 
 	parsedStatus, err := vo.NetStatus(status)
@@ -41,7 +41,7 @@ func NewOffice(number int, leasePeriod int, status string) (*Office, error) {
 	return &Office{
 		id:          uuid.New(),
 		number:      officeNumber,
-		status:      OfficeStatus(parsedStatus),
+		status:      parsedStatus,
 		leasePeriod: officeLeasePeriod,
 		createdAt:   time.Now(),
 		updatedAt:   time.Now(),

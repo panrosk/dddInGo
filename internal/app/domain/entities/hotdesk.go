@@ -20,7 +20,7 @@ func NewHotdesk(number int) (*Hotdesk, error) {
 		return nil, err
 	}
 
-	status, err := vo.NetStatus("Available")
+	status, err := vo.NetStatus("Active")
 	if err != nil {
 		return nil, err
 	}

@@ -27,7 +27,7 @@ func NewMeetingRoom(name string, capacity int) (*MeetingRoom, error) {
 		return nil, err
 	}
 
-	status, err := vo.NetStatus("Available")
+	status, err := vo.NetStatus("Active")
 	if err != nil {
 		return nil, err
 	}
