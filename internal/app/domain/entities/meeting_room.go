@@ -2,6 +2,7 @@ package entities
 
 import (
 	"coworking/internal/app/domain/vo"
+	"fmt"
 	"time"
 
 	"github.com/google/uuid"
@@ -19,6 +20,8 @@ type MeetingRoom struct {
 func NewMeetingRoom(name string, capacity int) (*MeetingRoom, error) {
 	meetingRoomName, err := vo.NewMeetingRoomName(name)
 	if err != nil {
+
+		fmt.Println("err", err)
 		return nil, err
 	}
 

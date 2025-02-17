@@ -23,6 +23,10 @@ func (u *RegisterMeetingRoomUsecase) Execute(params RegisterMeetingRoomParams) (
 
 	meetingRoom, err := entities.NewMeetingRoom(params.Name, params.Capacity)
 
+	if err != nil {
+		return nil, err
+	}
+
 	existingMeetingRooms, err := u.storage.FindByFilter(func(mr *entities.MeetingRoom) bool {
 		return mr.GetMeetingRoom()["name"] == params.Name
 	})
