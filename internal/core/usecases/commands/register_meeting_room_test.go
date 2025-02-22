@@ -1,10 +1,9 @@
 package commands_test
 
 import (
-	"coworking/internal/app/domain/domain_errors"
-	"coworking/internal/app/domain/entities"
-	"coworking/internal/app/usecases/commands"
+	"coworking/internal/core/usecases/commands"
 	"coworking/internal/ports"
+	meetingroom "coworking/internal/spaces/meeting_room"
 	"errors"
 	"testing"
 
@@ -12,19 +11,20 @@ import (
 )
 
 type MockMeetingRoomStorage struct {
-	meetingRooms []*entities.MeetingRoom
+	meetingRooms []*meetingroom.MeetingRoom
 }
 
 func NewMockMeetingRoomStorage() *MockMeetingRoomStorage {
-	return &MockMeetingRoomStorage{meetingRooms: make([]*entities.MeetingRoom, 0)}
+	return &MockMeetingRoomStorage{meetingRooms: make([]*meetingroom.MeetingRoom, 0)}
 }
 
-func (m *MockMeetingRoomStorage) Save(mr *entities.MeetingRoom) error {
+func (m *MockMeetingRoomStorage) Save(mr *meetingroom.MeetingRoom) error {
 	m.meetingRooms = append(m.meetingRooms, mr)
+
 	return nil
 }
 
-func (m *MockMeetingRoomStorage) FindById(id any) (*entities.MeetingRoom, error) {
+func (m *MockMeetingRoomStorage) FindById(id any) (*meetingroom.MeetingRoom, error) {
 	for _, mr := range m.meetingRooms {
 		if mr.GetMeetingRoom()["id"] == id {
 			return mr, nil
@@ -33,12 +33,12 @@ func (m *MockMeetingRoomStorage) FindById(id any) (*entities.MeetingRoom, error)
 	return nil, errors.New("not found")
 }
 
-func (m *MockMeetingRoomStorage) FindAll() ([]*entities.MeetingRoom, error) {
+func (m *MockMeetingRoomStorage) FindAll() ([]*meetingroom.MeetingRoom, error) {
 	return m.meetingRooms, nil
 }
 
-func (m *MockMeetingRoomStorage) FindByFilter(filterFunc func(*entities.MeetingRoom) bool) ([]*entities.MeetingRoom, error) {
-	var result []*entities.MeetingRoom
+func (m *MockMeetingRoomStorage) FindByFilter(filterFunc func(*meetingroom.MeetingRoom) bool) ([]*meetingroom.MeetingRoom, error) {
+	var result []*meetingroom.MeetingRoom
 	for _, mr := range m.meetingRooms {
 		if filterFunc(mr) {
 			result = append(result, mr)
@@ -47,7 +47,7 @@ func (m *MockMeetingRoomStorage) FindByFilter(filterFunc func(*entities.MeetingR
 	return result, nil
 }
 
-var _ ports.RepositoryPort[*entities.MeetingRoom] = (*MockMeetingRoomStorage)(nil)
+var _ ports.RepositoryPort[*meetingroom.MeetingRoom] = (*MockMeetingRoomStorage)(nil)
 
 func TestRegisterMeetingRoom_Success(t *testing.T) {
 	mockStorage := NewMockMeetingRoomStorage()
@@ -58,19 +58,16 @@ func TestRegisterMeetingRoom_Success(t *testing.T) {
 		Capacity: 10,
 	}
 
-	meetingRoom, err := usecase.Execute(params)
+	err := usecase.Handle(params)
 
 	assert.NoError(t, err)
-	assert.NotNil(t, meetingRoom)
-	assert.Equal(t, params.Name, meetingRoom.GetMeetingRoom()["name"])
-	assert.Equal(t, params.Capacity, meetingRoom.GetMeetingRoom()["capacity"])
 }
 
 func TestRegisterMeetingRoom_Duplicate(t *testing.T) {
 	mockStorage := NewMockMeetingRoomStorage()
 	usecase := commands.NewRegisterMeetingRoomUsecase(mockStorage)
 
-	existingMeetingRoom, _ := entities.NewMeetingRoom("Board Room", 10)
+	existingMeetingRoom, _ := meetingroom.NewMeetingRoom("Board Room", 10)
 	mockStorage.Save(existingMeetingRoom)
 
 	params := commands.RegisterMeetingRoomParams{
@@ -78,11 +75,10 @@ func TestRegisterMeetingRoom_Duplicate(t *testing.T) {
 		Capacity: 12,
 	}
 
-	meetingRoom, err := usecase.Execute(params)
+	err := usecase.Handle(params)
 
 	assert.Error(t, err)
-	assert.Nil(t, meetingRoom)
-	assert.Equal(t, domain_errors.ErrMeetingRoomAlreadyExists, err)
+	assert.Equal(t, meetingroom.ErrMeetingRoomAlreadyExists, err)
 }
 
 func TestRegisterMeetingRoom_InvalidName(t *testing.T) {
@@ -94,10 +90,9 @@ func TestRegisterMeetingRoom_InvalidName(t *testing.T) {
 		Capacity: 10,
 	}
 
-	meetingRoom, err := usecase.Execute(params)
+	err := usecase.Handle(params)
 
 	assert.Error(t, err)
-	assert.Nil(t, meetingRoom)
 }
 
 func TestRegisterMeetingRoom_InvalidCapacity(t *testing.T) {
@@ -109,8 +104,7 @@ func TestRegisterMeetingRoom_InvalidCapacity(t *testing.T) {
 		Capacity: -5,
 	}
 
-	meetingRoom, err := usecase.Execute(params)
+	err := usecase.Handle(params)
 
 	assert.Error(t, err)
-	assert.Nil(t, meetingRoom)
 }

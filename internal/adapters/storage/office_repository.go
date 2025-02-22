@@ -1,65 +1,60 @@
 package storage
 
 import (
-	"coworking/internal/app/domain/entities"
 	"coworking/internal/ports"
+	"coworking/internal/spaces/office"
 	"errors"
 )
 
 type OfficeRepository struct {
-	offices []*entities.Office
+	offices []*office.Office
 }
 
 func NewOfficeRepository() *OfficeRepository {
 	return &OfficeRepository{
-		offices: make([]*entities.Office, 0),
+		offices: make([]*office.Office, 0),
 	}
 }
 
-func (r *OfficeRepository) Save(office *entities.Office) error {
-	if office == nil {
+func (r *OfficeRepository) Save(o *office.Office) error {
+	if o == nil {
 		return errors.New("office cannot be nil")
 	}
-	copy := *office
-	r.offices = append(r.offices, &copy)
+	r.offices = append(r.offices, o)
 	return nil
 }
 
-func (r *OfficeRepository) FindAll() ([]*entities.Office, error) {
+func (r *OfficeRepository) FindAll() ([]*office.Office, error) {
 	return r.offices, nil
 }
 
-func filterOffices(offices []*entities.Office, predicate func(*entities.Office) bool) []*entities.Office {
-	var result []*entities.Office
-	for _, office := range offices {
-		if predicate(office) {
-			result = append(result, office)
-		}
-	}
-	return result
-}
-
-func (r *OfficeRepository) FindById(id any) (*entities.Office, error) {
+func (r *OfficeRepository) FindById(id any) (*office.Office, error) {
 	officeID, ok := id.(string)
 	if !ok {
 		return nil, errors.New("invalid ID type, expected string")
 	}
 
-	result := filterOffices(r.offices, func(office *entities.Office) bool {
-		return office.GetOffice()["id"] == officeID
-	})
-
-	if len(result) > 0 {
-		return result[0], nil
+	for _, o := range r.offices {
+		if o.GetOffice()["id"] == officeID {
+			return o, nil
+		}
 	}
 	return nil, nil
 }
 
-func (r *OfficeRepository) FindByFilter(filterFunc func(*entities.Office) bool) ([]*entities.Office, error) {
+func (r *OfficeRepository) FindByFilter(filterFunc func(*office.Office) bool) ([]*office.Office, error) {
 	if filterFunc == nil {
 		return nil, errors.New("filter function cannot be nil")
 	}
-	return filterOffices(r.offices, filterFunc), nil
+
+	var result []*office.Office
+	for _, o := range r.offices {
+		if filterFunc(o) {
+			result = append(result, o)
+		}
+	}
+	return result, nil
 }
 
-var _ ports.RepositoryPort[*entities.Office] = (*OfficeRepository)(nil)
+// Implementación de la interfaz RepositoryPort
+var _ ports.RepositoryPort[*office.Office] = (*OfficeRepository)(nil)

@@ -1,67 +1,63 @@
 package storage
 
 import (
-	"coworking/internal/app/domain/entities"
-	"coworking/internal/app/domain/vo"
 	"coworking/internal/ports"
+	"coworking/internal/spaces/hotdesk"
 	"errors"
 )
 
 type HotDeskRepository struct {
-	hotdesk []*entities.Hotdesk
+	hotdesks []*hotdesk.Hotdesk
 }
 
 func NewHotDeskRepository() *HotDeskRepository {
 	return &HotDeskRepository{
-		hotdesk: make([]*entities.Hotdesk, 0),
+		hotdesks: make([]*hotdesk.Hotdesk, 0),
 	}
 }
 
-func (r *HotDeskRepository) Save(hd *entities.Hotdesk) error {
+func (r *HotDeskRepository) Save(hd *hotdesk.Hotdesk) error {
 	if hd == nil {
-		return nil
+		return errors.New("cannot save a nil hotdesk")
 	}
-	copy := *hd
-	r.hotdesk = append(r.hotdesk, &copy)
+	r.hotdesks = append(r.hotdesks, hd)
 	return nil
 }
 
-func (r *HotDeskRepository) FindAll() ([]*entities.Hotdesk, error) {
-	return r.hotdesk, nil
+func (r *HotDeskRepository) FindAll() ([]*hotdesk.Hotdesk, error) {
+	return r.hotdesks, nil
 }
 
-func filter(hotdesks []*entities.Hotdesk, predicate func(*entities.Hotdesk) bool) []*entities.Hotdesk {
-	var result []*entities.Hotdesk
-	for _, hd := range hotdesks {
-		if predicate(hd) {
-			result = append(result, hd)
-		}
-	}
-	return result
-}
-
-func (r *HotDeskRepository) FindById(id any) (*entities.Hotdesk, error) {
-	number, ok := id.(*vo.HotdeskNumber)
+// FindById retrieves a hotdesk by its ID
+func (r *HotDeskRepository) FindById(id any) (*hotdesk.Hotdesk, error) {
+	number, ok := id.(*hotdesk.Number)
 	if !ok {
-		return nil, errors.New("invalid ID type")
+		return nil, errors.New("invalid ID type, expected *hotdesk.HotdeskNumber")
 	}
 	if number == nil {
-		return nil, nil
+		return nil, errors.New("ID cannot be nil")
 	}
-	result := filter(r.hotdesk, func(hd *entities.Hotdesk) bool {
-		return hd.Number.Value() == number.Value()
-	})
-	if len(result) > 0 {
-		return result[0], nil
+
+	for _, hd := range r.hotdesks {
+		if hd.Number.Value() == number.Value() {
+			return hd, nil
+		}
 	}
 	return nil, nil
 }
 
-func (r *HotDeskRepository) FindByFilter(filterFunc func(*entities.Hotdesk) bool) ([]*entities.Hotdesk, error) {
+func (r *HotDeskRepository) FindByFilter(filterFunc func(*hotdesk.Hotdesk) bool) ([]*hotdesk.Hotdesk, error) {
 	if filterFunc == nil {
 		return nil, errors.New("filter function cannot be nil")
 	}
-	return filter(r.hotdesk, filterFunc), nil
+
+	var result []*hotdesk.Hotdesk
+	for _, hd := range r.hotdesks {
+		if filterFunc(hd) {
+			result = append(result, hd)
+		}
+	}
+	return result, nil
 }
 
-var _ ports.RepositoryPort[*entities.Hotdesk] = (*HotDeskRepository)(nil)
+var _ ports.RepositoryPort[*hotdesk.Hotdesk] = (*HotDeskRepository)(nil)

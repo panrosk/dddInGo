@@ -1,9 +1,8 @@
 package commands
 
 import (
-	"coworking/internal/app/domain/domain_errors"
-	"coworking/internal/app/domain/entities"
 	"coworking/internal/ports"
+	"coworking/internal/spaces/hotdesk"
 )
 
 type RegisterHotdeskParams struct {
@@ -11,35 +10,34 @@ type RegisterHotdeskParams struct {
 }
 
 type RegisterHotdeskUsecase struct {
-	storage ports.RepositoryPort[*entities.Hotdesk]
+	storage ports.RepositoryPort[*hotdesk.Hotdesk]
 }
 
-func NewRegisterHotdeskUsecase(storage ports.RepositoryPort[*entities.Hotdesk]) *RegisterHotdeskUsecase {
+func NewRegisterHotdeskUsecase(storage ports.RepositoryPort[*hotdesk.Hotdesk]) *RegisterHotdeskUsecase {
 	return &RegisterHotdeskUsecase{storage: storage}
 }
 
-func (u *RegisterHotdeskUsecase) Execute(params RegisterHotdeskParams) (*entities.Hotdesk, error) {
-	hotdesk, err := entities.NewHotdesk(params.Number)
+func (u *RegisterHotdeskUsecase) Handle(params RegisterHotdeskParams) error {
+	newHotdesk, err := hotdesk.NewHotdesk(params.Number)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	existingHotdesks, err := u.storage.FindByFilter(func(hd *entities.Hotdesk) bool {
+	existingHotdesks, err := u.storage.FindByFilter(func(hd *hotdesk.Hotdesk) bool {
 		return hd.Number.Value() == params.Number
 	})
 
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	if len(existingHotdesks) > 0 {
-		return nil, domain_errors.ErrHotDeskAlreadyExists
+		return hotdesk.ErrHotDeskAlreadyExists
 	}
 
-	err = u.storage.Save(hotdesk)
-	if err != nil {
-		return nil, err
+	if err := u.storage.Save(newHotdesk); err != nil {
+		return err
 	}
 
-	return hotdesk, nil
+	return nil
 }

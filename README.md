@@ -15,61 +15,6 @@ Esta aplicación de coworking permite gestionar **hotdesks, oficinas y salas de 
 - **Testify** - Framework de testing.
 - **Go Validator** - Validación de DTOs.
 
-## 📂 Estructura del Proyecto
-
-Para el dia que este readme fue actualizado.
-
-├── cmd
-│ └── main.go
-├── go.mod
-├── go.sum
-├── internal
-│ ├── adapters
-│ │ ├── http
-│ │ │ ├── handlers
-│ │ │ │ ├── hotdesk_handler.go
-│ │ │ │ ├── meeting_room_handler.go
-│ │ │ │ ├── office_handler.go
-│ │ │ │ └── utils.go
-│ │ │ ├── http_errors
-│ │ │ │ └── errors.go
-│ │ │ ├── models
-│ │ │ │ ├── hotdesk_dto.go
-│ │ │ │ ├── meeting_room_dto.go
-│ │ │ │ └── office_dto.go
-│ │ │ ├── routes.go
-│ │ │ └── server.go
-│ │ └── storage
-│ │ ├── hotdesk_repository.go
-│ │ ├── meeting_room_repository.go
-│ │ └── office_repository.go
-│ ├── app
-│ │ ├── domain
-│ │ │ ├── domain_errors
-│ │ │ │ └── domain_errors.go
-│ │ │ ├── entities
-│ │ │ │ ├── hotdesk.go
-│ │ │ │ ├── hotdesk_test.go
-│ │ │ │ ├── meeting_room.go
-│ │ │ │ ├── meeting_room_test.go
-│ │ │ │ ├── office.go
-│ │ │ │ └── office_test.go
-│ │ │ └── vo
-│ │ │ ├── hotdesk.go
-│ │ │ ├── metting_room.go
-│ │ │ ├── office.go
-│ │ │ └── status.go
-│ │ └── usecases
-│ │ ├── command.go
-│ │ └── commands
-│ │ ├── register_hotdesk.go
-│ │ ├── register_meeting_room.go
-│ │ └── register_office.go
-│ └── ports
-│ ├── http_port.go
-│ └── storage_port.go
-└── README.md
-
 ## 📦 Instalación
 
 ### 1️⃣ Clonar el repositorio
@@ -84,5 +29,11 @@ cd coworking-app
 
 ```bash
 go mod tidy
-go run cmd/main.go
+go run cmd/main.go // or make run
+```
+
+### 3️⃣ Ejecutar los tests
+
+```bash
+go test ./... // or make test
 ```

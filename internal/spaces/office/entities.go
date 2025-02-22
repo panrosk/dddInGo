@@ -1,16 +1,16 @@
 package office
 
 import (
-	"github.com/google/uuid"
+	"coworking/internal/spaces/common"
 	"time"
-)
 
-type OfficeStatus string
+	"github.com/google/uuid"
+)
 
 type Office struct {
 	id          uuid.UUID
 	number      Number
-	status      Status
+	status      common.Status
 	leasePeriod LeasePeriod
 	createdAt   time.Time
 	updatedAt   time.Time
@@ -31,7 +31,7 @@ func NewOffice(number int, leasePeriod int, status string) (*Office, error) {
 		status = "Active"
 	}
 
-	parsedStatus, err := NewStatus(status)
+	parsedStatus, err := common.NewStatus(status)
 
 	if err != nil {
 		return nil, err

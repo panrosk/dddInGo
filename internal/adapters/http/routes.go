@@ -3,8 +3,8 @@ package http
 import (
 	"coworking/internal/adapters/http/handlers"
 	"coworking/internal/adapters/storage"
-	"coworking/internal/app/usecases"
-	"coworking/internal/app/usecases/commands"
+	"coworking/internal/core/usecases"
+	"coworking/internal/core/usecases/commands"
 )
 
 func (s *Server) RegisterRoutes() {

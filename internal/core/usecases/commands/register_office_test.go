@@ -1,10 +1,9 @@
 package commands_test
 
 import (
-	"coworking/internal/app/domain/domain_errors"
-	"coworking/internal/app/domain/entities"
-	"coworking/internal/app/usecases/commands"
+	"coworking/internal/core/usecases/commands"
 	"coworking/internal/ports"
+	"coworking/internal/spaces/office"
 	"errors"
 	"testing"
 
@@ -12,19 +11,19 @@ import (
 )
 
 type MockOfficeStorage struct {
-	offices []*entities.Office
+	offices []*office.Office
 }
 
 func NewMockOfficeStorage() *MockOfficeStorage {
-	return &MockOfficeStorage{offices: make([]*entities.Office, 0)}
+	return &MockOfficeStorage{offices: make([]*office.Office, 0)}
 }
 
-func (m *MockOfficeStorage) Save(o *entities.Office) error {
+func (m *MockOfficeStorage) Save(o *office.Office) error {
 	m.offices = append(m.offices, o)
 	return nil
 }
 
-func (m *MockOfficeStorage) FindById(id any) (*entities.Office, error) {
+func (m *MockOfficeStorage) FindById(id any) (*office.Office, error) {
 	for _, o := range m.offices {
 		if o.GetOffice()["id"] == id {
 			return o, nil
@@ -33,12 +32,12 @@ func (m *MockOfficeStorage) FindById(id any) (*entities.Office, error) {
 	return nil, errors.New("not found")
 }
 
-func (m *MockOfficeStorage) FindAll() ([]*entities.Office, error) {
+func (m *MockOfficeStorage) FindAll() ([]*office.Office, error) {
 	return m.offices, nil
 }
 
-func (m *MockOfficeStorage) FindByFilter(filterFunc func(*entities.Office) bool) ([]*entities.Office, error) {
-	var result []*entities.Office
+func (m *MockOfficeStorage) FindByFilter(filterFunc func(*office.Office) bool) ([]*office.Office, error) {
+	var result []*office.Office
 	for _, o := range m.offices {
 		if filterFunc(o) {
 			result = append(result, o)
@@ -47,11 +46,10 @@ func (m *MockOfficeStorage) FindByFilter(filterFunc func(*entities.Office) bool)
 	return result, nil
 }
 
-// Verificación explícita de implementación de la interfaz
-var _ ports.RepositoryPort[*entities.Office] = (*MockOfficeStorage)(nil)
+var _ ports.RepositoryPort[*office.Office] = (*MockOfficeStorage)(nil)
 
 func TestRegisterOffice_Success(t *testing.T) {
-	mockStorage := &MockOfficeStorage{}
+	mockStorage := NewMockOfficeStorage()
 	usecase := commands.NewRegisterOfficeUsecase(mockStorage)
 
 	params := commands.RegisterOfficeParams{
@@ -60,21 +58,17 @@ func TestRegisterOffice_Success(t *testing.T) {
 		Status:      "Active",
 	}
 
-	office, err := usecase.Execute(params)
+	err := usecase.Handle(params)
 
 	assert.NoError(t, err)
-	assert.NotNil(t, office)
-	assert.Equal(t, params.Number, office.GetOffice()["number"])
-	assert.Equal(t, params.LeasePeriod, office.GetOffice()["lease_period"])
-	assert.Equal(t, params.Status, office.GetOffice()["status"])
 }
 
 func TestRegisterOffice_Duplicate(t *testing.T) {
-	mockStorage := &MockOfficeStorage{}
+	mockStorage := NewMockOfficeStorage()
 	usecase := commands.NewRegisterOfficeUsecase(mockStorage)
 
-	existingOffice, _ := entities.NewOffice(101, 12, "Active")
-	mockStorage.Save(existingOffice)
+	existingOffice, _ := office.NewOffice(101, 12, "Active")
+	_ = mockStorage.Save(existingOffice)
 
 	params := commands.RegisterOfficeParams{
 		Number:      101,
@@ -82,15 +76,14 @@ func TestRegisterOffice_Duplicate(t *testing.T) {
 		Status:      "Inactive",
 	}
 
-	office, err := usecase.Execute(params)
+	err := usecase.Handle(params)
 
 	assert.Error(t, err)
-	assert.Nil(t, office)
-	assert.Equal(t, domain_errors.ErrOfficeAlreadyExists, err)
+	assert.Equal(t, office.ErrOfficeAlreadyExists, err)
 }
 
 func TestRegisterOffice_InvalidNumber(t *testing.T) {
-	mockStorage := &MockOfficeStorage{}
+	mockStorage := NewMockOfficeStorage()
 	usecase := commands.NewRegisterOfficeUsecase(mockStorage)
 
 	params := commands.RegisterOfficeParams{
@@ -99,40 +92,37 @@ func TestRegisterOffice_InvalidNumber(t *testing.T) {
 		Status:      "Active",
 	}
 
-	office, err := usecase.Execute(params)
+	err := usecase.Handle(params)
 
 	assert.Error(t, err)
-	assert.Nil(t, office)
 }
 
 func TestRegisterOffice_InvalidLeasePeriod(t *testing.T) {
-	mockStorage := &MockOfficeStorage{}
+	mockStorage := NewMockOfficeStorage()
 	usecase := commands.NewRegisterOfficeUsecase(mockStorage)
 
 	params := commands.RegisterOfficeParams{
 		Number:      101,
-		LeasePeriod: -3, // LeasePeriod inválido
+		LeasePeriod: -3,
 		Status:      "Active",
 	}
 
-	office, err := usecase.Execute(params)
+	err := usecase.Handle(params)
 
 	assert.Error(t, err)
-	assert.Nil(t, office)
 }
 
 func TestRegisterOffice_InvalidStatus(t *testing.T) {
-	mockStorage := &MockOfficeStorage{}
+	mockStorage := NewMockOfficeStorage()
 	usecase := commands.NewRegisterOfficeUsecase(mockStorage)
 
 	params := commands.RegisterOfficeParams{
 		Number:      101,
 		LeasePeriod: 12,
-		Status:      "Unknown", // Estado inválido
+		Status:      "Unknown",
 	}
 
-	office, err := usecase.Execute(params)
+	err := usecase.Handle(params)
 
 	assert.Error(t, err)
-	assert.Nil(t, office)
 }

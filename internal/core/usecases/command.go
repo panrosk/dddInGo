@@ -1,9 +1,9 @@
 package usecases
 
-import "coworking/internal/app/usecases/commands"
+import "coworking/internal/core/usecases/commands"
 
 type Command[T any, R any] interface {
-	Execute(params T) (R, error)
+	Handle(params T) (R, error)
 }
 
 type HotdeskUsecases struct {
@@ -18,6 +18,6 @@ type OfficeUsecases struct {
 	RegisterOffice *commands.RegisterOfficeUsecase
 }
 
-type ReservationUsecases struct {
-	RegisterReservation *commands.RegisterReservationUsecase
-}
+/* type ReservationUsecases struct { */
+/* 	RegisterReservation *commands.RegisterReservationUsecase */
+/* } */

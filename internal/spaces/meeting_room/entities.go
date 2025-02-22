@@ -1,6 +1,7 @@
 package meetingroom
 
 import (
+	"coworking/internal/spaces/common"
 	"fmt"
 	"time"
 
@@ -11,7 +12,7 @@ type MeetingRoom struct {
 	id        uuid.UUID
 	name      Name
 	capacity  Capacity
-	status    vo.Status
+	status    common.Status
 	createdAt time.Time
 	updatedAt time.Time
 }
@@ -29,7 +30,7 @@ func NewMeetingRoom(name string, capacity int) (*MeetingRoom, error) {
 		return nil, err
 	}
 
-	status, err := vo.NewStatus("Active")
+	status, err := common.NewStatus("Active")
 	if err != nil {
 		return nil, err
 	}

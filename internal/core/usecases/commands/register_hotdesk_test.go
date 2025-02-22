@@ -1,10 +1,9 @@
 package commands_test
 
 import (
-	"coworking/internal/app/domain/domain_errors"
-	"coworking/internal/app/domain/entities"
-	"coworking/internal/app/usecases/commands"
+	"coworking/internal/core/usecases/commands"
 	"coworking/internal/ports"
+	"coworking/internal/spaces/hotdesk"
 	"errors"
 	"testing"
 
@@ -12,33 +11,41 @@ import (
 )
 
 type MockHotdeskStorage struct {
-	hotdesks []*entities.Hotdesk
+	hotdesks []*hotdesk.Hotdesk
 }
 
 func NewMockHotdeskStorage() *MockHotdeskStorage {
-	return &MockHotdeskStorage{hotdesks: make([]*entities.Hotdesk, 0)}
+	return &MockHotdeskStorage{hotdesks: make([]*hotdesk.Hotdesk, 0)}
 }
 
-func (m *MockHotdeskStorage) Save(h *entities.Hotdesk) error {
+func (m *MockHotdeskStorage) Save(h *hotdesk.Hotdesk) error {
+	if h == nil {
+		return errors.New("cannot save nil hotdesk")
+	}
 	m.hotdesks = append(m.hotdesks, h)
 	return nil
 }
 
-func (m *MockHotdeskStorage) FindById(id any) (*entities.Hotdesk, error) {
+func (m *MockHotdeskStorage) FindById(id any) (*hotdesk.Hotdesk, error) {
 	for _, h := range m.hotdesks {
-		if h.GetHotdesk()["id"] == id {
+		hotdeskData := h.GetHotdesk()
+		if hotdeskData["id"] == id {
 			return h, nil
 		}
 	}
 	return nil, errors.New("not found")
 }
 
-func (m *MockHotdeskStorage) FindAll() ([]*entities.Hotdesk, error) {
+func (m *MockHotdeskStorage) FindAll() ([]*hotdesk.Hotdesk, error) {
 	return m.hotdesks, nil
 }
 
-func (m *MockHotdeskStorage) FindByFilter(filterFunc func(*entities.Hotdesk) bool) ([]*entities.Hotdesk, error) {
-	var result []*entities.Hotdesk
+func (m *MockHotdeskStorage) FindByFilter(filterFunc func(*hotdesk.Hotdesk) bool) ([]*hotdesk.Hotdesk, error) {
+	if filterFunc == nil {
+		return nil, errors.New("filter function cannot be nil")
+	}
+
+	var result []*hotdesk.Hotdesk
 	for _, h := range m.hotdesks {
 		if filterFunc(h) {
 			result = append(result, h)
@@ -47,7 +54,7 @@ func (m *MockHotdeskStorage) FindByFilter(filterFunc func(*entities.Hotdesk) boo
 	return result, nil
 }
 
-var _ ports.RepositoryPort[*entities.Hotdesk] = (*MockHotdeskStorage)(nil)
+var _ ports.RepositoryPort[*hotdesk.Hotdesk] = (*MockHotdeskStorage)(nil)
 
 func TestRegisterHotdesk_Success(t *testing.T) {
 	mockStorage := NewMockHotdeskStorage()
@@ -57,29 +64,39 @@ func TestRegisterHotdesk_Success(t *testing.T) {
 		Number: 5,
 	}
 
-	hotdesk, err := usecase.Execute(params)
+	err := usecase.Handle(params)
 
 	assert.NoError(t, err)
-	assert.NotNil(t, hotdesk)
-	assert.Equal(t, params.Number, hotdesk.GetHotdesk()["number"])
+
+	savedHotdesks, _ := mockStorage.FindByFilter(func(h *hotdesk.Hotdesk) bool {
+		return h.Number.Value() == params.Number
+	})
+
+	assert.Len(t, savedHotdesks, 1)
+	assert.Equal(t, params.Number, savedHotdesks[0].Number.Value())
 }
 
 func TestRegisterHotdesk_Duplicate(t *testing.T) {
 	mockStorage := NewMockHotdeskStorage()
 	usecase := commands.NewRegisterHotdeskUsecase(mockStorage)
 
-	existingHotdesk, _ := entities.NewHotdesk(5)
-	mockStorage.Save(existingHotdesk)
+	existingHotdesk, _ := hotdesk.NewHotdesk(5)
+	_ = mockStorage.Save(existingHotdesk)
 
 	params := commands.RegisterHotdeskParams{
 		Number: 5,
 	}
 
-	hotdesk, err := usecase.Execute(params)
+	err := usecase.Handle(params)
 
 	assert.Error(t, err)
-	assert.Nil(t, hotdesk)
-	assert.Equal(t, domain_errors.ErrHotDeskAlreadyExists, err)
+	assert.Equal(t, hotdesk.ErrHotDeskAlreadyExists, err)
+
+	savedHotdesks, _ := mockStorage.FindByFilter(func(h *hotdesk.Hotdesk) bool {
+		return h.Number.Value() == params.Number
+	})
+
+	assert.Len(t, savedHotdesks, 1)
 }
 
 func TestRegisterHotdesk_InvalidNumber(t *testing.T) {
@@ -90,8 +107,10 @@ func TestRegisterHotdesk_InvalidNumber(t *testing.T) {
 		Number: 0,
 	}
 
-	hotdesk, err := usecase.Execute(params)
+	err := usecase.Handle(params)
 
 	assert.Error(t, err)
-	assert.Nil(t, hotdesk)
+
+	savedHotdesks, _ := mockStorage.FindAll()
+	assert.Empty(t, savedHotdesks)
 }

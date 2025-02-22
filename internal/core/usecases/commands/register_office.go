@@ -1,9 +1,8 @@
 package commands
 
 import (
-	"coworking/internal/app/domain/domain_errors"
-	"coworking/internal/app/domain/entities"
 	"coworking/internal/ports"
+	"coworking/internal/spaces/office"
 )
 
 type RegisterOfficeParams struct {
@@ -13,35 +12,34 @@ type RegisterOfficeParams struct {
 }
 
 type RegisterOfficeUsecase struct {
-	storage ports.RepositoryPort[*entities.Office]
+	storage ports.RepositoryPort[*office.Office]
 }
 
-func NewRegisterOfficeUsecase(storage ports.RepositoryPort[*entities.Office]) *RegisterOfficeUsecase {
+func NewRegisterOfficeUsecase(storage ports.RepositoryPort[*office.Office]) *RegisterOfficeUsecase {
 	return &RegisterOfficeUsecase{storage: storage}
 }
 
-func (u *RegisterOfficeUsecase) Execute(params RegisterOfficeParams) (*entities.Office, error) {
-	existingOffices, err := u.storage.FindByFilter(func(o *entities.Office) bool {
+func (u *RegisterOfficeUsecase) Handle(params RegisterOfficeParams) error {
+	existingOffices, err := u.storage.FindByFilter(func(o *office.Office) bool {
 		return o.GetOffice()["number"] == params.Number
 	})
 
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	if len(existingOffices) > 0 {
-		return nil, domain_errors.ErrOfficeAlreadyExists
+		return office.ErrOfficeAlreadyExists
 	}
 
-	office, err := entities.NewOffice(params.Number, params.LeasePeriod, params.Status)
+	newOffice, err := office.NewOffice(params.Number, params.LeasePeriod, params.Status)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	err = u.storage.Save(office)
-	if err != nil {
-		return nil, err
+	if err := u.storage.Save(newOffice); err != nil {
+		return err
 	}
 
-	return office, nil
+	return nil
 }
