@@ -45,3 +45,42 @@ func (h *Hotdesk) GetHotdesk() map[string]interface{} {
 	}
 }
 
+type HotDeskReservation struct {
+	id                   uuid.UUID
+	userId               uuid.UUID
+	date                 time.Time
+	status               common.Status
+	createdAt            time.Time
+	updatedAt            time.Time
+	includedInMembership bool
+}
+
+func NewHotDeskReservation(userId uuid.UUID, date time.Time, includedInMembership bool) (*HotDeskReservation, error) {
+	status, err := common.NewStatus("Active")
+	if err != nil {
+		return nil, err
+	}
+
+	return &HotDeskReservation{
+		id:                   uuid.New(),
+		userId:               userId,
+		date:                 date,
+		status:               status,
+		createdAt:            time.Now(),
+		updatedAt:            time.Now(),
+		includedInMembership: includedInMembership,
+	}, nil
+}
+
+func (r *HotDeskReservation) GetReservation() map[string]interface{} {
+
+	return map[string]interface{}{
+		"id":                     r.id.String(),
+		"user_id":                r.userId.String(),
+		"date":                   r.date.Format(time.RFC3339),
+		"status":                 string(r.status),
+		"created_at":             r.createdAt.Format(time.RFC3339),
+		"updated_at":             r.updatedAt.Format(time.RFC3339),
+		"included_in_membership": r.includedInMembership,
+	}
+}
