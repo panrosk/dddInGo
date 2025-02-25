@@ -1,8 +1,11 @@
 package ports
 
-import "coworking/internal/spaces/meeting_room"
+import (
+	"coworking/internal/spaces/meeting_room"
+)
 
 type MeetingRoomRepositoryPort interface {
 	RepositoryPort[*meetingroom.MeetingRoom]
 	FindByName(room *meetingroom.MeetingRoom) (*meetingroom.MeetingRoom, error)
+	FindById(id string) (*meetingroom.MeetingRoom, error)
 }

@@ -41,3 +41,12 @@ func (r *MeetingRoomRepository) FindByName(room *meetingroom.MeetingRoom) (*meet
 	}
 	return nil, ErrMeetingRoomNotFound
 }
+
+func (r *MeetingRoomRepository) FindById(id string) (*meetingroom.MeetingRoom, error) {
+	for _, storedRoom := range r.rooms {
+		if storedRoom.ToMap()["id"] == id {
+			return storedRoom, nil
+		}
+	}
+	return nil, ErrMeetingRoomNotFound
+}
