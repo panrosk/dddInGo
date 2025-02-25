@@ -15,6 +15,7 @@ func NewServer() *Server {
 		},
 	)}
 
-	server.RegisterRoutes()
+	factory := NewHandlerFactory(server)
+	factory.RegisterRoutes()
 	return server
 }

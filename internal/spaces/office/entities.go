@@ -16,7 +16,7 @@ type Office struct {
 	updatedAt   time.Time
 }
 
-func NewOffice(number int, leasePeriod int, status string) (*Office, error) {
+func New(number int, leasePeriod int, status string) (*Office, error) {
 	officeNumber, err := NewNumber(number)
 	if err != nil {
 		return nil, err
@@ -32,7 +32,6 @@ func NewOffice(number int, leasePeriod int, status string) (*Office, error) {
 	}
 
 	parsedStatus, err := common.NewStatus(status)
-
 	if err != nil {
 		return nil, err
 	}
@@ -47,7 +46,7 @@ func NewOffice(number int, leasePeriod int, status string) (*Office, error) {
 	}, nil
 }
 
-func (o *Office) GetOffice() map[string]interface{} {
+func (o *Office) ToMap() map[string]interface{} {
 	return map[string]interface{}{
 		"id":           o.id.String(),
 		"number":       o.number.Value(),

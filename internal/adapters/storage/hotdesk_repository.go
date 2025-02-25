@@ -10,6 +10,8 @@ type HotDeskRepository struct {
 	hotdesks []*hotdesk.Hotdesk
 }
 
+var _ ports.HotDeskRepositoryPort = (*HotDeskRepository)(nil)
+
 func NewHotDeskRepository() *HotDeskRepository {
 	return &HotDeskRepository{
 		hotdesks: make([]*hotdesk.Hotdesk, 0),
@@ -28,36 +30,15 @@ func (r *HotDeskRepository) FindAll() ([]*hotdesk.Hotdesk, error) {
 	return r.hotdesks, nil
 }
 
-// FindById retrieves a hotdesk by its ID
-func (r *HotDeskRepository) FindById(id any) (*hotdesk.Hotdesk, error) {
-	number, ok := id.(*hotdesk.Number)
-	if !ok {
-		return nil, errors.New("invalid ID type, expected *hotdesk.HotdeskNumber")
-	}
-	if number == nil {
-		return nil, errors.New("ID cannot be nil")
+func (r *HotDeskRepository) FindHotdeskByNumber(hd *hotdesk.Hotdesk) (*hotdesk.Hotdesk, error) {
+	if hd == nil {
+		return nil, errors.New("hotdesk cannot be nil")
 	}
 
-	for _, hd := range r.hotdesks {
-		if hd.Number.Value() == number.Value() {
-			return hd, nil
+	for _, storedHd := range r.hotdesks {
+		if storedHd.ToMap()["number"] == hd.ToMap()["number"] {
+			return storedHd, nil
 		}
 	}
 	return nil, nil
 }
-
-func (r *HotDeskRepository) FindByFilter(filterFunc func(*hotdesk.Hotdesk) bool) ([]*hotdesk.Hotdesk, error) {
-	if filterFunc == nil {
-		return nil, errors.New("filter function cannot be nil")
-	}
-
-	var result []*hotdesk.Hotdesk
-	for _, hd := range r.hotdesks {
-		if filterFunc(hd) {
-			result = append(result, hd)
-		}
-	}
-	return result, nil
-}
-
-var _ ports.RepositoryPort[*hotdesk.Hotdesk] = (*HotDeskRepository)(nil)

@@ -7,45 +7,48 @@ import (
 	"github.com/google/uuid"
 )
 
+const defaultStatusValue = "Active"
+
 type Hotdesk struct {
 	id        uuid.UUID
-	Number    Number
+	number    Number
 	status    common.Status
 	createdAt time.Time
 	updatedAt time.Time
 }
 
-func NewHotdesk(number int) (*Hotdesk, error) {
+func New(number int) (*Hotdesk, error) {
 	hotdeskNumber, err := NewNumber(number)
 	if err != nil {
 		return nil, err
 	}
 
-	status, err := common.NewStatus("Active")
+	status, err := defaultStatus()
 	if err != nil {
 		return nil, err
 	}
 
+	now := time.Now()
 	return &Hotdesk{
 		id:        uuid.New(),
-		Number:    hotdeskNumber,
+		number:    hotdeskNumber,
 		status:    status,
-		createdAt: time.Now(),
-		updatedAt: time.Now(),
+		createdAt: now,
+		updatedAt: now,
 	}, nil
 }
 
-func (h *Hotdesk) GetHotdesk() map[string]interface{} {
+func (h *Hotdesk) ToMap() map[string]interface{} {
 	return map[string]interface{}{
 		"id":         h.id.String(),
-		"number":     h.Number.Value(),
+		"number":     h.number.Value(),
 		"status":     string(h.status),
 		"created_at": h.createdAt.Format(time.RFC3339),
 		"updated_at": h.updatedAt.Format(time.RFC3339),
 	}
 }
 
-type HotDeskReservation struct {
+type Reservation struct {
 	id                   uuid.UUID
 	userId               uuid.UUID
 	date                 time.Time
@@ -55,25 +58,25 @@ type HotDeskReservation struct {
 	includedInMembership bool
 }
 
-func NewHotDeskReservation(userId uuid.UUID, date time.Time, includedInMembership bool) (*HotDeskReservation, error) {
-	status, err := common.NewStatus("Active")
+func NewReservation(userId uuid.UUID, date time.Time, includedInMembership bool) (*Reservation, error) {
+	status, err := defaultStatus()
 	if err != nil {
 		return nil, err
 	}
 
-	return &HotDeskReservation{
+	now := time.Now()
+	return &Reservation{
 		id:                   uuid.New(),
 		userId:               userId,
 		date:                 date,
 		status:               status,
-		createdAt:            time.Now(),
-		updatedAt:            time.Now(),
+		createdAt:            now,
+		updatedAt:            now,
 		includedInMembership: includedInMembership,
 	}, nil
 }
 
-func (r *HotDeskReservation) GetReservation() map[string]interface{} {
-
+func (r *Reservation) ToMap() map[string]interface{} {
 	return map[string]interface{}{
 		"id":                     r.id.String(),
 		"user_id":                r.userId.String(),
@@ -83,4 +86,8 @@ func (r *HotDeskReservation) GetReservation() map[string]interface{} {
 		"updated_at":             r.updatedAt.Format(time.RFC3339),
 		"included_in_membership": r.includedInMembership,
 	}
+}
+
+func defaultStatus() (common.Status, error) {
+	return common.NewStatus(defaultStatusValue)
 }

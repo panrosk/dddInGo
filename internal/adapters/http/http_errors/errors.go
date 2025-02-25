@@ -16,7 +16,8 @@ var HTTPErrorMapping = map[error]int{
 	meetingroom.ErrInvalidMeetingRoomName:     fiber.StatusBadRequest, // 400
 	office.ErrInvalidOfficeLeasePeriod:        fiber.StatusBadRequest, // 400
 	office.ErrInvalidOfficeNumber:             fiber.StatusBadRequest, // 400
-	office.ErrOfficeAlreadyExists:             fiber.ErrConflict.Code, // 409
+	office.ErrOfficeAlreadyExists:             fiber.StatusConflict,
+	hotdesk.ErrHotDeskAlredyReserved:          fiber.StatusConflict,
 }
 
 func MapDomainErrorToHTTPStatus(err error) int {

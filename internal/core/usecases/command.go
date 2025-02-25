@@ -18,6 +18,6 @@ type OfficeUsecases struct {
 	RegisterOffice *commands.RegisterOfficeUsecase
 }
 
-/* type ReservationUsecases struct { */
-/* 	RegisterReservation *commands.RegisterReservationUsecase */
-/* } */
+type ReservationUsecases struct {
+	RegisterReservation *commands.ReserveHotdeskUsecase
+}

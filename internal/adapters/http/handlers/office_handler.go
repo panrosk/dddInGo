@@ -6,7 +6,6 @@ import (
 	"coworking/internal/core/usecases"
 	"coworking/internal/core/usecases/commands"
 	"coworking/internal/ports"
-
 	"github.com/gofiber/fiber/v2"
 )
 

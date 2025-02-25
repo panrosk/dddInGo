@@ -36,7 +36,6 @@ func main() {
 		log.Println("No .env file found in root, using environment variables")
 	}
 
-	// Verificar que PORT está presente y es válido
 	portStr := os.Getenv("PORT")
 	if portStr == "" {
 		log.Fatal("Environment variable PORT is required")

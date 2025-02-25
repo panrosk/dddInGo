@@ -11,29 +11,31 @@ type RegisterMeetingRoomParams struct {
 }
 
 type RegisterMeetingRoomUsecase struct {
-	storage ports.RepositoryPort[*meetingroom.MeetingRoom]
+	storage ports.MeetingRoomRepositoryPort
 }
 
-func NewRegisterMeetingRoomUsecase(storage ports.RepositoryPort[*meetingroom.MeetingRoom]) *RegisterMeetingRoomUsecase {
+func NewRegisterMeetingRoomUsecase(storage ports.MeetingRoomRepositoryPort) *RegisterMeetingRoomUsecase {
 	return &RegisterMeetingRoomUsecase{storage: storage}
 }
 
 func (u *RegisterMeetingRoomUsecase) Handle(params RegisterMeetingRoomParams) error {
-	newMeetingRoom, err := meetingroom.NewMeetingRoom(params.Name, params.Capacity)
+	newMeetingRoom, err := createMeetingRoom(params.Name, params.Capacity)
 	if err != nil {
 		return err
 	}
 
-	existingMeetingRooms, err := u.storage.FindByFilter(func(mr *meetingroom.MeetingRoom) bool {
-		return mr.GetMeetingRoom()["name"] == params.Name
-	})
-	if err != nil {
-		return err
-	}
-
-	if len(existingMeetingRooms) > 0 {
+	if u.roomAlreadyExists(newMeetingRoom) {
 		return meetingroom.ErrMeetingRoomAlreadyExists
 	}
 
 	return u.storage.Save(newMeetingRoom)
+}
+
+func createMeetingRoom(name string, capacity int) (*meetingroom.MeetingRoom, error) {
+	return meetingroom.New(name, capacity)
+}
+
+func (u *RegisterMeetingRoomUsecase) roomAlreadyExists(room *meetingroom.MeetingRoom) bool {
+	existingRoom, err := u.storage.FindByName(room)
+	return err == nil && existingRoom != nil
 }

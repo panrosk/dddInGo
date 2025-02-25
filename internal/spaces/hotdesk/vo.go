@@ -5,10 +5,14 @@ type Number struct {
 }
 
 func NewNumber(value int) (Number, error) {
-	if value <= 0 {
+	if !isValidHotDeskNumber(value) {
 		return Number{}, ErrInvalidHotDeskNumber
 	}
 	return Number{value: value}, nil
+}
+
+func isValidHotDeskNumber(value int) bool {
+	return value > 0
 }
 
 func (o Number) Value() int {

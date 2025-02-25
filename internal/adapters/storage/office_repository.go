@@ -1,10 +1,11 @@
 package storage
 
 import (
-	"coworking/internal/ports"
 	"coworking/internal/spaces/office"
 	"errors"
 )
+
+var ErrOfficeNotFound = errors.New("office not found")
 
 type OfficeRepository struct {
 	offices []*office.Office
@@ -28,33 +29,15 @@ func (r *OfficeRepository) FindAll() ([]*office.Office, error) {
 	return r.offices, nil
 }
 
-func (r *OfficeRepository) FindById(id any) (*office.Office, error) {
-	officeID, ok := id.(string)
-	if !ok {
-		return nil, errors.New("invalid ID type, expected string")
+func (r *OfficeRepository) FindByNumber(o *office.Office) (*office.Office, error) {
+	if o == nil {
+		return nil, errors.New("office cannot be nil")
 	}
 
-	for _, o := range r.offices {
-		if o.GetOffice()["id"] == officeID {
-			return o, nil
+	for _, storedOffice := range r.offices {
+		if storedOffice.ToMap()["number"] == o.ToMap()["number"] {
+			return storedOffice, nil
 		}
 	}
-	return nil, nil
+	return nil, ErrOfficeNotFound
 }
-
-func (r *OfficeRepository) FindByFilter(filterFunc func(*office.Office) bool) ([]*office.Office, error) {
-	if filterFunc == nil {
-		return nil, errors.New("filter function cannot be nil")
-	}
-
-	var result []*office.Office
-	for _, o := range r.offices {
-		if filterFunc(o) {
-			result = append(result, o)
-		}
-	}
-	return result, nil
-}
-
-// Implementación de la interfaz RepositoryPort
-var _ ports.RepositoryPort[*office.Office] = (*OfficeRepository)(nil)

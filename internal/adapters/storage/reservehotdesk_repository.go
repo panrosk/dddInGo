@@ -1,22 +1,21 @@
 package storage
 
 import (
-	"coworking/internal/ports"
 	"coworking/internal/spaces/hotdesk"
 	"errors"
 )
 
 type HotDeskReservationRepository struct {
-	reservations []*hotdesk.HotDeskReservation
+	reservations []*hotdesk.Reservation
 }
 
 func NewHotDeskReservationRepository() *HotDeskReservationRepository {
 	return &HotDeskReservationRepository{
-		reservations: make([]*hotdesk.HotDeskReservation, 0),
+		reservations: make([]*hotdesk.Reservation, 0),
 	}
 }
 
-func (r *HotDeskReservationRepository) Save(reservation *hotdesk.HotDeskReservation) error {
+func (r *HotDeskReservationRepository) Save(reservation *hotdesk.Reservation) error {
 	if reservation == nil {
 		return errors.New("reservation cannot be nil")
 	}
@@ -25,43 +24,20 @@ func (r *HotDeskReservationRepository) Save(reservation *hotdesk.HotDeskReservat
 	return nil
 }
 
-func (r *HotDeskReservationRepository) FindAll() ([]*hotdesk.HotDeskReservation, error) {
-
+func (r *HotDeskReservationRepository) FindAll() ([]*hotdesk.Reservation, error) {
 	return r.reservations, nil
 }
 
-func filterReservations(reservations []*hotdesk.HotDeskReservation, predicate func(*hotdesk.HotDeskReservation) bool) []*hotdesk.HotDeskReservation {
+func (r *HotDeskReservationRepository) FindByReservation(reservation *hotdesk.Reservation) ([]*hotdesk.Reservation, error) {
+	if reservation == nil {
+		return nil, errors.New("reservation cannot be nil")
+	}
 
-	var result []*hotdesk.HotDeskReservation
-	for _, res := range reservations {
-		if predicate(res) {
+	var result []*hotdesk.Reservation
+	for _, res := range r.reservations {
+		if res.ToMap()["user_id"] == reservation.ToMap()["user_id"] && res.ToMap()["date"] == reservation.ToMap()["date"] {
 			result = append(result, res)
 		}
 	}
-	return result
+	return result, nil
 }
-
-func (r *HotDeskReservationRepository) FindById(id any) (*hotdesk.HotDeskReservation, error) {
-	reservationID, ok := id.(string)
-	if !ok {
-		return nil, errors.New("invalid ID type, expected string")
-	}
-
-	result := filterReservations(r.reservations, func(res *hotdesk.HotDeskReservation) bool {
-		return res.GetReservation()["id"] == reservationID
-	})
-
-	if len(result) > 0 {
-		return result[0], nil
-	}
-	return nil, nil
-}
-
-func (r *HotDeskReservationRepository) FindByFilter(filterFunc func(*hotdesk.HotDeskReservation) bool) ([]*hotdesk.HotDeskReservation, error) {
-	if filterFunc == nil {
-		return nil, errors.New("filter function cannot be nil")
-	}
-	return filterReservations(r.reservations, filterFunc), nil
-}
-
-var _ ports.RepositoryPort[*hotdesk.HotDeskReservation] = (*HotDeskReservationRepository)(nil)

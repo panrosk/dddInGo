@@ -12,34 +12,31 @@ type RegisterOfficeParams struct {
 }
 
 type RegisterOfficeUsecase struct {
-	storage ports.RepositoryPort[*office.Office]
+	storage ports.OfficeRepositoryPort
 }
 
-func NewRegisterOfficeUsecase(storage ports.RepositoryPort[*office.Office]) *RegisterOfficeUsecase {
+func NewRegisterOfficeUsecase(storage ports.OfficeRepositoryPort) *RegisterOfficeUsecase {
 	return &RegisterOfficeUsecase{storage: storage}
 }
 
 func (u *RegisterOfficeUsecase) Handle(params RegisterOfficeParams) error {
-	existingOffices, err := u.storage.FindByFilter(func(o *office.Office) bool {
-		return o.GetOffice()["number"] == params.Number
-	})
-
+	newOffice, err := createOffice(params.Number, params.LeasePeriod, params.Status)
 	if err != nil {
 		return err
 	}
 
-	if len(existingOffices) > 0 {
+	if u.officeAlreadyExists(newOffice) {
 		return office.ErrOfficeAlreadyExists
 	}
 
-	newOffice, err := office.NewOffice(params.Number, params.LeasePeriod, params.Status)
-	if err != nil {
-		return err
-	}
+	return u.storage.Save(newOffice)
+}
 
-	if err := u.storage.Save(newOffice); err != nil {
-		return err
-	}
+func createOffice(number int, leasePeriod int, status string) (*office.Office, error) {
+	return office.New(number, leasePeriod, status)
+}
 
-	return nil
+func (u *RegisterOfficeUsecase) officeAlreadyExists(o *office.Office) bool {
+	existingOffice, err := u.storage.FindByNumber(o)
+	return err == nil && existingOffice != nil
 }
