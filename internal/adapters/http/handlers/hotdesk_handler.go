@@ -33,6 +33,7 @@ func (h *HotdeskHandler) RegisterEntity(c *fiber.Ctx) error {
 	validationErrors := req.Validate()
 	if len(validationErrors) > 0 {
 		return FormatErrorResponse(c, fiber.StatusBadRequest, "Validation failed", validationErrors)
+
 	}
 
 	params := commands.RegisterHotdeskParams{
