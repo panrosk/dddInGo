@@ -2,7 +2,6 @@ package meetingroom
 
 import (
 	"coworking/internal/spaces/common"
-	"errors"
 	"github.com/google/uuid"
 	"time"
 )
