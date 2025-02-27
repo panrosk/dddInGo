@@ -7,6 +7,5 @@ import (
 
 type MeetingRoomReservationRepositoryPort interface {
 	Save(reservation *meetingroom.Reservation) error
-	FindByMeetingRoomAndDate(meetingRoomId uuid.UUID, date string) ([]*meetingroom.Reservation, error)
-	FindByUser(userId uuid.UUID) ([]*meetingroom.Reservation, error)
+	FindByMeetingRoomAndDate(meetingRoomId uuid.UUID, date meetingroom.Date) ([]*meetingroom.Reservation, error)
 }

@@ -27,11 +27,11 @@ func (r *MeetingRoomReservationRepository) Save(reservation *meetingroom.Reserva
 	return nil
 }
 
-func (r *MeetingRoomReservationRepository) FindByMeetingRoomAndDate(meetingRoomId uuid.UUID, date string) ([]*meetingroom.Reservation, error) {
+func (r *MeetingRoomReservationRepository) FindByMeetingRoomAndDate(meetingRoomId uuid.UUID, date meetingroom.Date) ([]*meetingroom.Reservation, error) {
 	var results []*meetingroom.Reservation
 	for _, res := range r.reservations {
 		resMap := res.ToMap()
-		if resMap["meetingRoomId"] == meetingRoomId.String() && resMap["date"] == date {
+		if resMap["meetingRoomId"] == meetingRoomId.String() && resMap["date"] == date.Value() {
 			results = append(results, res)
 		}
 	}

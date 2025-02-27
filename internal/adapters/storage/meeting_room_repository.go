@@ -3,6 +3,8 @@ package storage
 import (
 	"coworking/internal/spaces/meeting_room"
 	"errors"
+
+	"github.com/google/uuid"
 )
 
 var ErrMeetingRoomNotFound = errors.New("meeting room not found")
@@ -29,22 +31,22 @@ func (r *MeetingRoomRepository) FindAll() ([]*meetingroom.MeetingRoom, error) {
 	return r.rooms, nil
 }
 
-func (r *MeetingRoomRepository) FindByName(room *meetingroom.MeetingRoom) (*meetingroom.MeetingRoom, error) {
-	if room == nil {
-		return nil, errors.New("meeting room cannot be nil")
+func (r *MeetingRoomRepository) FindByName(name *meetingroom.Name) (*meetingroom.MeetingRoom, error) {
+	if name == nil {
+		return nil, errors.New("name cannot be empty")
 	}
 
 	for _, storedRoom := range r.rooms {
-		if storedRoom.ToMap()["name"] == room.ToMap()["name"] {
+		if storedRoom.ToMap()["name"] == name.Value() {
 			return storedRoom, nil
 		}
 	}
 	return nil, ErrMeetingRoomNotFound
 }
 
-func (r *MeetingRoomRepository) FindById(id string) (*meetingroom.MeetingRoom, error) {
+func (r *MeetingRoomRepository) FindById(id uuid.UUID) (*meetingroom.MeetingRoom, error) {
 	for _, storedRoom := range r.rooms {
-		if storedRoom.ToMap()["id"] == id {
+		if storedRoom.ToMap()["id"] == id.String() {
 			return storedRoom, nil
 		}
 	}

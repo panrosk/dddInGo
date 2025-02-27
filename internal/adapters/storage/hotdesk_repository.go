@@ -30,13 +30,13 @@ func (r *HotDeskRepository) FindAll() ([]*hotdesk.Hotdesk, error) {
 	return r.hotdesks, nil
 }
 
-func (r *HotDeskRepository) FindHotdeskByNumber(hd *hotdesk.Hotdesk) (*hotdesk.Hotdesk, error) {
+func (r *HotDeskRepository) FindHotdeskByNumber(hd *hotdesk.Number) (*hotdesk.Hotdesk, error) {
 	if hd == nil {
-		return nil, errors.New("hotdesk cannot be nil")
+		return nil, errors.New("number cannot be nil")
 	}
 
 	for _, storedHd := range r.hotdesks {
-		if storedHd.ToMap()["number"] == hd.ToMap()["number"] {
+		if storedHd.ToMap()["number"] == hd.Value() {
 			return storedHd, nil
 		}
 	}

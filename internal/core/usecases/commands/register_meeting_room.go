@@ -19,13 +19,18 @@ func NewRegisterMeetingRoomUsecase(storage ports.MeetingRoomRepositoryPort) *Reg
 }
 
 func (u *RegisterMeetingRoomUsecase) Handle(params RegisterMeetingRoomParams) error {
-	newMeetingRoom, err := createMeetingRoom(params.Name, params.Capacity)
+	name, err := meetingroom.NewName(params.Name)
 	if err != nil {
 		return err
 	}
 
-	if u.roomAlreadyExists(newMeetingRoom) {
+	if u.roomAlreadyExists(&name) {
 		return meetingroom.ErrMeetingRoomAlreadyExists
+	}
+
+	newMeetingRoom, err := createMeetingRoom(params.Name, params.Capacity)
+	if err != nil {
+		return err
 	}
 
 	return u.storage.Save(newMeetingRoom)
@@ -35,7 +40,7 @@ func createMeetingRoom(name string, capacity int) (*meetingroom.MeetingRoom, err
 	return meetingroom.New(name, capacity)
 }
 
-func (u *RegisterMeetingRoomUsecase) roomAlreadyExists(room *meetingroom.MeetingRoom) bool {
+func (u *RegisterMeetingRoomUsecase) roomAlreadyExists(room *meetingroom.Name) bool {
 	existingRoom, err := u.storage.FindByName(room)
 	return err == nil && existingRoom != nil
 }

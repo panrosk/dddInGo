@@ -20,13 +20,20 @@ func NewRegisterOfficeUsecase(storage ports.OfficeRepositoryPort) *RegisterOffic
 }
 
 func (u *RegisterOfficeUsecase) Handle(params RegisterOfficeParams) error {
-	newOffice, err := createOffice(params.Number, params.LeasePeriod, params.Status)
+
+	officeNumber, err := office.NewNumber(params.Number)
+
 	if err != nil {
 		return err
 	}
 
-	if u.officeAlreadyExists(newOffice) {
+	if u.officeAlreadyExists(&officeNumber) {
 		return office.ErrOfficeAlreadyExists
+	}
+
+	newOffice, err := createOffice(params.Number, params.LeasePeriod, params.Status)
+	if err != nil {
+		return err
 	}
 
 	return u.storage.Save(newOffice)
@@ -36,7 +43,7 @@ func createOffice(number int, leasePeriod int, status string) (*office.Office, e
 	return office.New(number, leasePeriod, status)
 }
 
-func (u *RegisterOfficeUsecase) officeAlreadyExists(o *office.Office) bool {
-	existingOffice, err := u.storage.FindByNumber(o)
+func (u *RegisterOfficeUsecase) officeAlreadyExists(number *office.Number) bool {
+	existingOffice, err := u.storage.FindByNumber(number)
 	return err == nil && existingOffice != nil
 }

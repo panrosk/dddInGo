@@ -29,13 +29,13 @@ func (r *OfficeRepository) FindAll() ([]*office.Office, error) {
 	return r.offices, nil
 }
 
-func (r *OfficeRepository) FindByNumber(o *office.Office) (*office.Office, error) {
+func (r *OfficeRepository) FindByNumber(o *office.Number) (*office.Office, error) {
 	if o == nil {
 		return nil, errors.New("office cannot be nil")
 	}
 
 	for _, storedOffice := range r.offices {
-		if storedOffice.ToMap()["number"] == o.ToMap()["number"] {
+		if storedOffice.ToMap()["number"] == o.Value() {
 			return storedOffice, nil
 		}
 	}
