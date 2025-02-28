@@ -11,3 +11,5 @@ var ErrInvalidDate = errors.New("error de input en la fecha, esta mal formateada
 var ErrInvalidMeetingRoomId = errors.New("el id de la sala de reuniones no puede estar vacío")
 var ErrInvdalidMeetingRoomUUID = errors.New("el id de la sala de reuniones no es un UUID válido")
 var ErrMeetingRoomNotFound = errors.New("sala de reuniones no encontrada")
+var ErrInvalidUserUUID = errors.New("el id del usuario no es un UUID válido")
+var ErrInvalidReservationHour = errors.New("la hora de la reserva no es válida")

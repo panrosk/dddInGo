@@ -2,9 +2,11 @@ package ports
 
 import (
 	"coworking/internal/spaces/hotdesk"
+	"github.com/google/uuid"
+	"time"
 )
 
 type HotDeskReservationRepositoryPort interface {
 	RepositoryPort[*hotdesk.Reservation]
-	FindByReservation(reservation *hotdesk.Reservation) ([]*hotdesk.Reservation, error)
+	FindByUserIDAndDate(userID uuid.UUID, date time.Time) ([]*hotdesk.Reservation, error)
 }

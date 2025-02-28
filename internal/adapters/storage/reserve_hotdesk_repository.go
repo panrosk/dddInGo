@@ -3,6 +3,8 @@ package storage
 import (
 	"coworking/internal/spaces/hotdesk"
 	"errors"
+	"github.com/google/uuid"
+	"time"
 )
 
 type HotDeskReservationRepository struct {
@@ -28,14 +30,11 @@ func (r *HotDeskReservationRepository) FindAll() ([]*hotdesk.Reservation, error)
 	return r.reservations, nil
 }
 
-func (r *HotDeskReservationRepository) FindByReservation(reservation *hotdesk.Reservation) ([]*hotdesk.Reservation, error) {
-	if reservation == nil {
-		return nil, errors.New("reservation cannot be nil")
-	}
+func (r *HotDeskReservationRepository) FindByUserIDAndDate(userID uuid.UUID, date time.Time) ([]*hotdesk.Reservation, error) {
 
 	var result []*hotdesk.Reservation
 	for _, res := range r.reservations {
-		if res.ToMap()["user_id"] == reservation.ToMap()["user_id"] && res.ToMap()["date"] == reservation.ToMap()["date"] {
+		if res.ToMap()["user_id"] == userID && res.ToMap()["date"] == date.Format(time.RFC3339) {
 			result = append(result, res)
 		}
 	}

@@ -12,20 +12,20 @@ import (
 	"github.com/google/uuid"
 )
 
-type ReservationHandler struct {
-	commands *usecases.ReservationUsecases
+type HotdeskReservationHandler struct {
+	commands *usecases.HotdeskReservationUsecases
 }
 
-func NewReservationHandler(registerCommand *usecases.ReservationUsecases) *ReservationHandler {
-	return &ReservationHandler{commands: registerCommand}
+func NewReservationHandler(registerCommand *usecases.HotdeskReservationUsecases) *HotdeskReservationHandler {
+	return &HotdeskReservationHandler{commands: registerCommand}
 }
 
-func (h *ReservationHandler) RegisterRoutes(core *fiber.App) {
+func (h *HotdeskReservationHandler) RegisterRoutes(core *fiber.App) {
 	commandsGroup := core.Group("/reservations")
 	commandsGroup.Post("/", h.RegisterEntity)
 }
 
-func (h *ReservationHandler) RegisterEntity(c *fiber.Ctx) error {
+func (h *HotdeskReservationHandler) RegisterEntity(c *fiber.Ctx) error {
 	var req models.ReservationDTO
 
 	if err := c.BodyParser(&req); err != nil {
@@ -60,4 +60,4 @@ func (h *ReservationHandler) RegisterEntity(c *fiber.Ctx) error {
 	return c.SendStatus(fiber.StatusCreated)
 }
 
-var _ ports.HttpPort = (*ReservationHandler)(nil)
+var _ ports.HttpPort = (*HotdeskReservationHandler)(nil)

@@ -32,7 +32,7 @@ func (u *ReserveHotdeskUsecase) Handle(params ReserveHotdeskParams) error {
 		return err
 	}
 
-	if u.reservationAlreadyExists(newReservation) {
+	if u.reservationAlreadyExists(params.UserId, params.Date) {
 		return errors.New("a reservation already exists for this user on the specified date")
 	}
 
@@ -56,7 +56,7 @@ func createReservation(userId uuid.UUID, date time.Time, includedInMembership bo
 	return hotdesk.NewReservation(userId, date, includedInMembership)
 }
 
-func (u *ReserveHotdeskUsecase) reservationAlreadyExists(reservation *hotdesk.Reservation) bool {
-	existingReservations, err := u.storage.FindByReservation(reservation)
+func (u *ReserveHotdeskUsecase) reservationAlreadyExists(userId uuid.UUID, reservationDate time.Time) bool {
+	existingReservations, err := u.storage.FindByUserIDAndDate(userId, reservationDate)
 	return err == nil && len(existingReservations) > 0
 }
