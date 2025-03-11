@@ -25,3 +25,7 @@ type HotdeskReservationUsecases struct {
 type MeetingRoomReservationUsecases struct {
 	RegisterReservation *commands.ReserveMeetingRoomUseCase
 }
+
+type CreateMembershipUsecases struct {
+	CreateMembership *commands.CreateMembershipUseCase
+}
