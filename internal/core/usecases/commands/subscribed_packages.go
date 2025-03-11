@@ -40,6 +40,8 @@ func (u *SubscribePackageUseCase) Handle(params SubscribePackageParams) error {
 		return err
 	}
 
+	u.storage.Save(currentMembership)
+
 	newEvents := currentMembership.ReleaseEvents()
 
 	for _, e := range newEvents {

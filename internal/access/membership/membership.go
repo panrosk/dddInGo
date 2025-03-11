@@ -2,9 +2,8 @@ package membership
 
 import (
 	"coworking/internal/core/events"
-	"time"
-
 	"github.com/google/uuid"
+	"time"
 )
 
 var _ events.EventSourcedEntity[MembershipEventTypes, any] = (*Membership)(nil)
@@ -120,6 +119,26 @@ func (m *Membership) SubscribePackage(month int, year int, credits int) error {
 	m.When(event)
 
 	return nil
+}
+
+func (m *Membership) IsActive() bool {
+	return m.active
+}
+
+func (m *Membership) GetPackages() []Package {
+	return m.packages
+}
+
+func (m *Membership) GetTotalCredits() int {
+	totalCredits := 0
+
+	//packages esta reserverd
+	for _, pack := range m.packages {
+
+		totalCredits += pack.credits
+	}
+
+	return totalCredits
 }
 
 func (m *Membership) ReleaseEvents() []events.DomainEvent[MembershipEventTypes, any] {

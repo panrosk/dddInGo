@@ -2,36 +2,58 @@ package storage
 
 import (
 	"coworking/internal/access/membership"
-	"coworking/internal/ports"
+	"coworking/internal/core/events"
+	"errors"
 )
 
-type MembershipRepository struct {
-	store          map[string]*membership.Membership
-	userIndex      map[string]string
-	aggregateIndex map[string]string
+type InMemoryMembershipRepository struct {
+	memberships map[string]*membership.Membership
+	events      map[string][]events.DomainEvent[membership.MembershipEvent, any]
 }
 
-func NewMembershipRepository() ports.MembershipRepository {
-	return &MembershipRepository{
-		store:          make(map[string]*membership.Membership),
-		userIndex:      make(map[string]string),
-		aggregateIndex: make(map[string]string),
+func NewInMemoryMembershipRepository() *InMemoryMembershipRepository {
+	return &InMemoryMembershipRepository{
+		memberships: make(map[string]*membership.Membership),
+		events:      make(map[string][]events.DomainEvent[membership.MembershipEvent, any]),
 	}
 }
 
-func (r *MembershipRepository) Save(m *membership.Membership) error {
-	r.store[m.GetID()] = m
-	r.userIndex[m.UserID()] = m.GetID()
-	r.aggregateIndex[m.GetID()] = m.GetID()
+func (r *InMemoryMembershipRepository) Save(m *membership.Membership) error {
+	r.memberships[m.GetID()] = m
 	return nil
 }
 
-func (r *MembershipRepository) ExistsByUserID(userID string) (bool, error) {
-	_, ok := r.userIndex[userID]
-	return ok, nil
+func (r *InMemoryMembershipRepository) SaveEvent(event events.DomainEvent[membership.MembershipEvent, any]) error {
+	payload, ok := event.Payload().(membership.MembershipEvent)
+	if !ok {
+		return errors.New("invalid membership event payload")
+	}
+	membershipID := payload.ID()
+	r.events[membershipID] = append(r.events[membershipID], event)
+	return nil
 }
 
-func (r *MembershipRepository) ExistsByMembershipID(membershipID string) (bool, error) {
-	_, ok := r.aggregateIndex[membershipID]
-	return ok, nil
+func (r *InMemoryMembershipRepository) ExistsByUserID(userID string) (bool, error) {
+	for _, m := range r.memberships {
+		if m.UserID() == userID {
+			return true, nil
+		}
+	}
+	return false, nil
+}
+
+func (r *InMemoryMembershipRepository) GetByMembershipID(membershipID string) (*membership.Membership, error) {
+	m, ok := r.memberships[membershipID]
+	if !ok {
+		return nil, errors.New("membership not found")
+	}
+	return m, nil
+}
+
+func (r *InMemoryMembershipRepository) LoadEventsByMembershipID(membershipID string) ([]events.DomainEvent[membership.MembershipEvent, any], error) {
+	evts, ok := r.events[membershipID]
+	if !ok {
+		return nil, errors.New("no events found for membership id")
+	}
+	return evts, nil
 }
